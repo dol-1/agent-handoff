@@ -18,5 +18,13 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dol-1/agent-handoff.git"
+  },
+  "homepage": "https://github.com/dol-1/agent-handoff#readme",
+  "bugs": {
+    "url": "https://github.com/dol-1/agent-handoff/issues"
+  }
 }

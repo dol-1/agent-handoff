@@ -5,9 +5,7 @@ separate Claude Code execution and review turns. It accepts verified webhook
 events, commits them to SQLite before responding, and processes jobs through a
 bounded state machine.
 
-This source is prepared for later publication but is not yet published. It is
-licensed under Apache-2.0; repository creation and publication remain explicit
-human gates.
+Agent Handoff is licensed under Apache-2.0.
 
 ## State machine
 
@@ -47,7 +45,7 @@ backends can be added without replacing orchestration semantics.
 ## Install
 
 ```bash
-git clone <approved-repository-url> agent-handoff
+git clone https://github.com/dol-1/agent-handoff.git
 cd agent-handoff
 ./install.sh --workspace /absolute/path/to/your/agent-workspace --no-start
 ```
