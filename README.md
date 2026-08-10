@@ -7,6 +7,9 @@ bounded state machine.
 
 Agent Handoff is licensed under Apache-2.0.
 
+New here? Follow the [Getting Started guide](docs/GETTING_STARTED.md) for a
+safe first installation and verification.
+
 ## State machine
 
 ```text
