@@ -1,0 +1,22 @@
+{
+  "name": "agent-handoff",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Durable Linear-to-Claude execution and review handoff service",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "test:v1b": "node --test",
+    "start:ingress": "node src/ingressServer.js",
+    "start:worker": "node src/workerEntry.js",
+    "doctor": "bash bin/agent-handoff-doctor.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "license": "Apache-2.0"
+}

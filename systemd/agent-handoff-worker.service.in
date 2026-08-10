@@ -1,0 +1,18 @@
+[Unit]
+Description=Agent Handoff execution and review worker
+After=network.target agent-handoff-ingress.service
+Wants=agent-handoff-ingress.service
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@WORKSPACE@
+EnvironmentFile=@ROOT@/.env.routing
+Environment=AGENT_HANDOFF_NODE_BIN=@NODE_BIN@
+Environment=AGENT_HANDOFF_CLAUDE_BIN=@CLAUDE_BIN@
+ExecStart=@ROOT@/bin/agent-handoff-worker.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

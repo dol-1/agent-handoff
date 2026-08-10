@@ -1,0 +1,16 @@
+[Unit]
+Description=Agent Handoff durable webhook ingress
+After=network.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@ROOT@
+ExecStart=@NODE_BIN@ @ROOT@/src/ingressServer.js
+EnvironmentFile=@ROOT@/.env.routing
+EnvironmentFile=@ROOT@/.env
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
