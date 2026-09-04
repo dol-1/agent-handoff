@@ -17,6 +17,7 @@ test('standalone config has no private routing or Claude path defaults', () => {
   assert.equal(config.allowedTeamId, '');
   assert.equal(config.allowedProjectId, '');
   assert.equal(config.allowedTargetStateName, 'Todo');
+  assert.equal(config.reviewMode, 'opus');
   assert.equal(config.claudeBin, 'claude');
   assert.ok(config.projectRoot.endsWith('agent-handoff'));
 });
@@ -55,4 +56,23 @@ test('sanitized routing template contains placeholders, not real identifiers', (
   assert.match(contents, /REPLACE_WITH_LINEAR_PROJECT_ID/);
   assert.match(contents, /AGENT_HANDOFF_RUNTIME_DIR=@ROOT@\/\.runtime/);
   assert.doesNotMatch(contents, /[0-9a-f]{8}-[0-9a-f-]{27,}/i);
+});
+
+
+test('external review mode is configurable and invalid modes fail closed', () => {
+  const external = loadConfig({ ...EXPLICIT, AGENT_HANDOFF_REVIEW_MODE: 'external' });
+  assert.equal(external.reviewMode, 'external');
+
+  let message = '';
+  const originalExit = process.exit;
+  process.exit = (code) => { throw new Error(`exit-${code}`); };
+  try {
+    assert.throws(
+      () => assertExplicitV1BRouting({ ...EXPLICIT, AGENT_HANDOFF_REVIEW_MODE: 'unexpected' }, (value) => { message = value; }),
+      /exit-1/,
+    );
+  } finally {
+    process.exit = originalExit;
+  }
+  assert.match(message, /invalid AGENT_HANDOFF_REVIEW_MODE/);
 });

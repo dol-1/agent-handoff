@@ -273,6 +273,15 @@ export function createWorker({
   // what guarantees the execute and review legs share one global exclusive
   // Claude-operation lane — no separate plumbing needed for that guarantee.
   function processEventInner(event) {
+    // External-review mode is a fail-safe boundary for projects where the
+    // implementation worker must stop at In Review. Any stale review job
+    // already present from an earlier configuration is acknowledged without
+    // spawning Opus or mutating Linear review state.
+    if (event.jobType === 'review' && config.reviewMode === 'external') {
+      store.markDelivered(event.id, now());
+      log(`review skipped for ${event.issueIdentifier} (external review mode)`);
+      return { delivered: true, evaluation: { ok: true, reason: 'external_review' } };
+    }
     return event.jobType === 'review' ? processReviewEventInner(event) : processExecuteEventInner(event);
   }
 
@@ -364,7 +373,9 @@ export function createWorker({
   // both, so no extra locking is needed for that guarantee.
   async function reconcileOnceInner() {
     const execute = await reconcileForState({ targetStateName: config.allowedTargetStateName, jobType: 'execute' });
-    const review = await reconcileForState({ targetStateName: REVIEW_TARGET_STATE_NAME, jobType: 'review' });
+    const review = config.reviewMode === 'external'
+      ? { ok: true, skipped: true, reason: 'external_review' }
+      : await reconcileForState({ targetStateName: REVIEW_TARGET_STATE_NAME, jobType: 'review' });
     return { execute, review };
   }
 

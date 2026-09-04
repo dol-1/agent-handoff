@@ -14,6 +14,7 @@ const CONFIG = {
   allowedTeamId: 'team-1',
   allowedProjectId: 'project-1',
   allowedTargetStateName: 'Todo',
+  reviewMode: 'opus',
 };
 
 function sign(body) {
@@ -96,6 +97,15 @@ test('2. In Review transition: verified + relevant, jobType=review', () => {
 
 // DEMO-65 v1C, requirement 3: a comment-only webhook (not an Issue state
 // transition) must never create a job of either type.
+test('external review mode ignores In Review instead of queuing Opus', () => {
+  const payload = basePayload({ data: { ...basePayload().data, state: { name: REVIEW_TARGET_STATE_NAME } } });
+  const { rawBody, headers } = makeRequest(payload);
+  const result = classifyWebhook({ rawBody, headers, config: { ...CONFIG, reviewMode: 'external' } });
+  assert.equal(result.verified, true);
+  assert.equal(result.relevant, false);
+  assert.equal(result.reason, 'wrong_target_state');
+});
+
 test('3. comment-type webhook payload -> not relevant, no job', () => {
   const payload = { action: 'create', type: 'Comment', webhookTimestamp: Date.now(), data: { id: 'comment-1', issue: { identifier: 'DEMO-62' } } };
   const { rawBody, headers } = makeRequest(payload);

@@ -13,19 +13,16 @@
 
 import { verifySignature } from './webhook.js';
 
-// DEMO-65 v1C: a verified transition into Todo creates job_type=execute
-// (unchanged from v1B); a verified transition into In Review creates
-// job_type=review. Hardcoded, not env-configurable — consistent with how
-// this codebase already treats "In Review"/"Done" as fixed Linear state
-// names elsewhere (e.g. claudeInvoker.js's evaluateCompletionResult()
-// checks canonicalStatus === 'In Review' as a literal). config.allowedTargetStateName
-// ('Todo') stays the only explicitly-required-routing state name.
+// DEMO-65 v1C: a verified transition into Todo creates job_type=execute.
+// A verified transition into In Review creates job_type=review unless
+// AGENT_HANDOFF_REVIEW_MODE=external, in which case In Review is deliberately
+// outside this worker's automation scope and is left to an external reviewer.
 export const REVIEW_TARGET_STATE_NAME = 'In Review';
 export const DONE_STATE_NAME = 'Done';
 
 function jobTypeForState(stateName, config) {
   if (stateName === config.allowedTargetStateName) return 'execute';
-  if (stateName === REVIEW_TARGET_STATE_NAME) return 'review';
+  if (stateName === REVIEW_TARGET_STATE_NAME && config.reviewMode !== 'external') return 'review';
   return null;
 }
 

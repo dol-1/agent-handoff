@@ -8,6 +8,7 @@ const SERVICE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function loadConfig(env = process.env) {
   const secret = env.LINEAR_WEBHOOK_SECRET || '';
+  const reviewMode = env.AGENT_HANDOFF_REVIEW_MODE || 'opus';
 
   return {
     // Not configurable: AC-2 requires this receiver to stay localhost-only
@@ -21,6 +22,9 @@ export function loadConfig(env = process.env) {
     allowedTeamId: env.AGENT_HANDOFF_ALLOWED_TEAM_ID || '',
     allowedProjectId: env.AGENT_HANDOFF_ALLOWED_PROJECT_ID || '',
     allowedTargetStateName: env.AGENT_HANDOFF_ALLOWED_TARGET_STATE || 'Todo',
+    // 'opus' keeps the historical automatic review loop. 'external' stops
+    // automation at In Review so another reviewer/human gate owns acceptance.
+    reviewMode,
 
     // --- v1B additions below (unused by v1A server.js) ---
 
@@ -100,10 +104,15 @@ export function missingV1BRoutingEnvVars(env = process.env) {
 // start beats silently inheriting loadConfig()'s v1A-oriented default scope.
 export function assertExplicitV1BRouting(env = process.env, log = (msg) => process.stderr.write(`${msg}\n`)) {
   const missing = missingV1BRoutingEnvVars(env);
-  if (missing.length === 0) return;
+  const reviewMode = env.AGENT_HANDOFF_REVIEW_MODE || 'opus';
+  const validReviewMode = reviewMode === 'opus' || reviewMode === 'external';
+  if (missing.length === 0 && validReviewMode) return;
+  const details = [];
+  if (missing.length > 0) details.push(`missing: ${missing.join(', ')}`);
+  if (!validReviewMode) details.push(`invalid AGENT_HANDOFF_REVIEW_MODE: ${reviewMode}`);
   log(
-    `[agent-handoff] fatal: v1B requires explicit routing config (missing: ${missing.join(', ')}) — ` +
-      'refusing to start without an explicit scope. Copy .env.routing.example to .env.routing, ' +
+    `[agent-handoff] fatal: v1B requires explicit routing config (${details.join('; ')}) — ` +
+      'refusing to start without an explicit valid scope. Copy .env.routing.example to .env.routing, ' +
       'replace every placeholder, and load it before starting ingress or worker.',
   );
   process.exit(1);

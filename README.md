@@ -73,6 +73,21 @@ curl --fail http://127.0.0.1:8788/healthz
 The listener is fixed to `127.0.0.1`; external TLS ingress and webhook routing
 are operator-managed and outside this installer.
 
+## Review mode
+
+By default, Agent Handoff keeps its historical automatic Opus review loop.
+Projects that require a separate reviewer can set:
+
+```bash
+AGENT_HANDOFF_REVIEW_MODE=external
+```
+
+In external-review mode, Todo issues are still executed normally, but transitions
+into `In Review` are not queued for Opus and reconciliation does not discover
+review jobs. Any stale review job already in the local queue is marked delivered
+without launching a reviewer. This lets project-specific review/human-gate
+processes own acceptance while preserving the same durable execution queue.
+
 ## Security boundaries
 
 Webhook bodies are HMAC-SHA256 verified before parsing or routing. Only trusted
